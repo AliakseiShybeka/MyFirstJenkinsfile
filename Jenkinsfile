@@ -10,9 +10,16 @@ parameters {
             echo "Active user is now ${params.USERID}"
             }
         }
-        stage {
+        stage ('Login1'){
+            steps {
+                echo "step 2"
+            }                    
+        }
 
-                    
+        stage ('Login2') {
+            steps {
+                echo "step 3"
+            }                    
         }
     }
 }
