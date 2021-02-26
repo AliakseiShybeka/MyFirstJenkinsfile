@@ -12,7 +12,10 @@ parameters {
 
         }
         stage(masds) {
+        steps {
+            echo('HEllo')
 
+        }
         }
         stage ('Login1'){
             steps {
