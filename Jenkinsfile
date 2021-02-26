@@ -11,6 +11,9 @@ parameters {
             }
 
         }
+        stage(masds) {
+
+        }
         stage ('Login1'){
             steps {
                 echo "step 2"
