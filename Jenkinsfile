@@ -9,7 +9,6 @@ parameters {
             steps {
             echo "Active user is now ${params.USERID}"
             }
-
         }
         stage(masds) {
         steps {

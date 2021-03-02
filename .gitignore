@@ -2,3 +2,4 @@
 .idea/*
 *.gdsl
 src/*
+.vagrant/*
