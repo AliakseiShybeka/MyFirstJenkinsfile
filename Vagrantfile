@@ -1,5 +1,5 @@
 Vagrant.configure("2") do |config|
-  # не копировать приват ключ в хостовую машину
+  # не копировать приват ключ в хостовую машину dd
   # изменить объем памяти для виртуальной машины по умолчанию
    config.vm.provider :virtualbox do |vb|
      config.ssh.insert_key = false
