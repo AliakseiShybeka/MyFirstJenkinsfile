@@ -1,0 +1,3 @@
+# Main Server
+[MAIN_SERVERS]
+main-serv ansible_host=192.168.60.4

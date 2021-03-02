@@ -3,112 +3,45 @@
   become: yes
 
   tasks:
-    - name: enable_some_VARIABLES
-      include_vars: ./ansible-info/group_vars/MAIN_SERVERS.yml
 
-    # Update
-    - name: apt-get update
-      apt:
-        update_cache: yes
+    # Update all packages with yum
+    - name: "Upgrade all packages using yum"
+      yum:
+        name: '*'
+        state: 'latest'
 
+    - name: install java-1.8.0-openjdk-devel
+      yum:
+        name: "java-1.8.0-openjdk-devel"
+        state: 'latest'
 
+    - name: Just force systemd to reread configs
+      systemd:
+        daemon_reload: yes
 
-    - name: Upgrade all apt packages
-      apt:
-        upgrade: dist
-        force_apt_get: yes
-
-    # Install Git
-    - name: "Include install latest git"
-      include_tasks: "install_latest_git.yml"
-
-    # Install Docker
-    - name: "Include install latest Docker"
-      include_tasks: "install_latest_docker.yml"
-
-    # Install docker-compose
-    - name: "Include docker-compose"
-      include_tasks: "install_docker_compose.yml"
-
-    # Install bash competitions for docker
-    - name: "nstall bash competitions for docker"
-      include_tasks: "install_bash_comp.yml"
-
-    # Docker Remote API enable on docker host
-    - name: "enable Docker Remote API on docker host"
-      include_tasks: "configure_docker_remote_api.yml"
-
-    #   развернуть веб приложение ансиблом дергая docker-compose.
-    #   но пока решено дергать докер компоуз дженсинсом
-    # - name: "Run docker-compose up"
-    #   include_tasks: "start-containers.yml"
-
-# Next Play install JAVA
-- hosts: all
-  become: yes
-
-  tasks:
-    - name: "Include install_java"
-      include: install_java.yml
-
-# Next Play : install jenkins Role
-- hosts: all
-  become: yes
-
-  roles:
-    - { role: geerlingguy.jenkins, when: ansible_system == 'Linux' }
-
-# Next Play : install jenkins plugins and our jobs
-- hosts: all
-  become: yes
-
-  tasks:
-    - name: "Include install_jenkins_plugins"
-      include: install_jenkins_plugins_and_jobs.yml
-
-    - name: Add the user 'jenkins' into docker group
-      user:
-        name: jenkins
-        shell: /bin/bash
-        groups:
-          - docker
-        append: yes
-
-    - name: Install latest version of ansible"
-      apt:
-        name: ansible
+    - name: Install yum utils
+      yum:
+        name: yum-utils
         state: latest
 
-    - name: Validate the sudoers file before saving
-      lineinfile:
-        path: /etc/sudoers
-        state: present
-        regexp: '^%ADMIN ALL='
-        line: 'jenkins ALL=(ALL) NOPASSWD: ALL'
-
-    - name: Reboot box if kernel/libs updated and requested by the system
-      reboot:
-
-    - name: Wait for system to become reachable again
-      wait_for_connection:
-        delay: 6
-        timeout: 10
-
-
-    - name: Download CLI jar
+    - name: Add Docker repo
       get_url:
-        url: "http://127.0.0.1:8080/jnlpJars/jenkins-cli.jar"
-        dest: "/opt/jenkins-cli.jar"
+        url: https://download.docker.com/linux/centos/docker-ce.repo
+        dest: /etc/yum.repos.d/docer-ce.repo
+      become: yes
 
-    - name: SET job deploy-wordpress-app-prod
-      shell: "java -jar /opt/jenkins-cli.jar -s http://127.0.0.1:8080/  -auth {{jenkins_admin_username}}:{{jenkins_admin_password}} create-job deploy-wordpress-app-prod < /jenkins-jobs/deploy-wordpress-app-prod.xml"
+    - name: installing docker
+      package:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+        state: present
 
-    - name: START job deploy-wordpress-app-prod
-      shell: "java -jar /opt/jenkins-cli.jar -s http://127.0.0.1:8080/  -auth {{jenkins_admin_username}}:{{jenkins_admin_password}} -webSocket build deploy-wordpress-app-prod"
+    - name: 'Starting Docker services'
+      service:
+        name: docker
+        state: started
 
-    - name: 'SET job: "restart-services-on-config-update"'
-      shell: "java -jar /opt/jenkins-cli.jar -s http://127.0.0.1:8080/  -auth {{jenkins_admin_username}}:{{jenkins_admin_password}} create-job restart-services-on-config-update < /jenkins-jobs/restart-services-on-config-update.xml"
 
-    # - name: 'START job: "restart-services-on-config-update"'
-    #   shell: "java -jar /opt/jenkins-cli.jar -s http://127.0.0.1:8080/  -auth {{jenkins_admin_username}}:{{jenkins_admin_password}} -webSocket build restart-services-on-config-update"
 
