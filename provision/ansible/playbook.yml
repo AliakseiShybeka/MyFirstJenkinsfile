@@ -43,5 +43,18 @@
         name: docker
         state: started
 
+    - name: install docker-compose
+      get_url:
+        url: "https://github.com/docker/compose/releases/download/1.27.4/docker-compose-Linux-x86_64"
+        dest: "/usr/local/bin/docker-compose"
+        mode: 0755
+
+    # Next Play : install jenkins Role
+- hosts: all
+  become: yes
+
+  roles:
+    - { role: geerlingguy.jenkins, when: ansible_system == 'Linux' }
+
 
 
