@@ -49,6 +49,21 @@
         dest: "/usr/local/bin/docker-compose"
         mode: 0755
 
+    # Configure docker remote API ↓ ↓ ↓
+
+    # Edit lib/systemd/system/docker.service
+    - name: comment ExecStart line in docker.sercive
+      shell: "sed -i 's/^ExecStart/#&/' /lib/systemd/system/docker.service"
+    # Add new line after commented
+    - name: add new line
+      shell: "sed -i '/^#ExecStart.*/iExecStart=/usr/bin/dockerd -H tcp://0.0.0.0:4243 -H unix:///var/run/docker.sock\n' /lib/systemd/system/docker.service"
+
+    - name: Just force systemd to reread configs and reload docker
+      systemd:
+        daemon_reload: yes
+        state: restarted
+        name: docker
+
     # Next Play : install jenkins Role
 - hosts: all
   become: yes
