@@ -16,7 +16,7 @@ Vagrant.configure("2") do |config|
     app.vm.network "forwarded_port", guest: 8080, host: 8080, host_ip: "127.0.0.1", guest_ip: "192.168.60.4"
     app.vm.network "forwarded_port", guest: 7777, host: 7777, host_ip: "127.0.0.1", guest_ip: "192.168.60.4"
 
-    config.vm.provision "ansible" do |ansible|
+    config.vm.provision "ansible" do |ansible| #fd
         ansible.verbose = "v"
         ansible.playbook = "./provision/ansible/playbook.yml"
       end
