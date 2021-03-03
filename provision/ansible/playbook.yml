@@ -4,65 +4,65 @@
 
   tasks:
 
-    # Update all packages with yum
-    - name: "Upgrade all packages using yum"
-      yum:
-        name: '*'
-        state: 'latest'
+    #    # Update all packages with yum
+    #    - name: "Upgrade all packages using yum"
+    #      yum:
+    #        name: '*'
+    #        state: 'latest'
+    #
+    #    - name: install java-1.8.0-openjdk-devel
+    #      yum:
+    #        name: "java-1.8.0-openjdk-devel"
+    #        state: 'latest'
+    #
+    #    - name: Just force systemd to reread configs
+    #      systemd:
+    #        daemon_reload: yes
+    #
+    #    - name: Install yum utils
+    #      yum:
+    #        name: yum-utils
+    #        state: latest
+    #
+    #    - name: Add Docker repo
+    #      get_url:
+    #        url: https://download.docker.com/linux/centos/docker-ce.repo
+    #        dest: /etc/yum.repos.d/docer-ce.repo
+    #      become: yes
 
-    - name: install java-1.8.0-openjdk-devel
-      yum:
-        name: "java-1.8.0-openjdk-devel"
-        state: 'latest'
-
-    - name: Just force systemd to reread configs
-      systemd:
-        daemon_reload: yes
-
-    - name: Install yum utils
-      yum:
-        name: yum-utils
-        state: latest
-
-    - name: Add Docker repo
-      get_url:
-        url: https://download.docker.com/linux/centos/docker-ce.repo
-        dest: /etc/yum.repos.d/docer-ce.repo
-      become: yes
-
-    - name: installing docker
-      package:
-        name:
-          - docker-ce
-          - docker-ce-cli
-          - containerd.io
-        state: present
-
-    - name: 'Starting Docker services'
-      service:
-        name: docker
-        state: started
-
-    - name: install docker-compose
-      get_url:
-        url: "https://github.com/docker/compose/releases/download/1.27.4/docker-compose-Linux-x86_64"
-        dest: "/usr/local/bin/docker-compose"
-        mode: 0755
-
-    # Configure docker remote API ↓ ↓ ↓
-
-    # Edit lib/systemd/system/docker.service
-    - name: comment ExecStart line in docker.sercive
-      shell: "sed -i 's/^ExecStart/#&/' /lib/systemd/system/docker.service"
-    # Add new line after commented
-    - name: add new line
-      shell: "sed -i '/^#ExecStart.*/iExecStart=/usr/bin/dockerd -H tcp://0.0.0.0:4243 -H unix:///var/run/docker.sock\n' /lib/systemd/system/docker.service"
-
-    - name: Just force systemd to reread configs and reload docker
-      systemd:
-        daemon_reload: yes
-        state: restarted
-        name: docker
+    #    - name: installing docker
+    #      package:
+    #        name:
+    #          - docker-ce
+    #          - docker-ce-cli
+    #          - containerd.io
+    #        state: present
+    #
+    #    - name: 'Starting Docker services'
+    #      service:
+    #        name: docker
+    #        state: started
+    #
+    #    - name: install docker-compose
+    #      get_url:
+    #        url: "https://github.com/docker/compose/releases/download/1.27.4/docker-compose-Linux-x86_64"
+    #        dest: "/usr/local/bin/docker-compose"
+    #        mode: 0755
+    #
+    #    # Configure docker remote API ↓ ↓ ↓
+    #
+    #    # Edit lib/systemd/system/docker.service
+    #    - name: comment ExecStart line in docker.sercive
+    #      shell: "sed -i 's/^ExecStart/#&/' /lib/systemd/system/docker.service"
+    #    # Add new line after commented
+    #    - name: add new line
+    #      shell: "sed -i '/^#ExecStart.*/iExecStart=/usr/bin/dockerd -H tcp://0.0.0.0:4243 -H unix:///var/run/docker.sock\n' /lib/systemd/system/docker.service"
+    #
+    #    - name: Just force systemd to reread configs and reload docker
+    #      systemd:
+    #        daemon_reload: yes
+    #        state: restarted
+    #        name: docker
 
     # Install MAVEN
     - name: "Download Maven 3.6.3 distr to /tmp"
@@ -84,17 +84,11 @@
 
     - name: "Copying a file for environment variables setting"
       copy:
-        src: ./maven_vars/redhat/maven.sh
+        src: ./maven.sh
         dest: /etc/profile.d/
         mode: "a+x"
       when: ansible_os_family == 'RedHat'
 
-    - name: "Copying a file for environment variables setting"
-      copy:
-        src: ./maven_vars/debian/maven.sh
-        dest: /etc/profile.d/
-        mode: "a+x"
-      when: ansible_os_family == 'Debian'
 
 
 
