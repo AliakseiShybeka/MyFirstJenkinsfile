@@ -24,14 +24,14 @@ Vagrant.configure("2") do |config|
 #     config.vm.provision "shell", path: "./provision/centos_provision.sh"
   end
 
-#    # Node server
-#    config.vm.define "app2" do |app2|
-#      app2.vm.hostname = "alex-node"
-#      app2.vm.box = "geerlingguy/centos7"
-#      app2.vm.network :private_network, ip: "192.168.60.5", virtualbox__intnet: "mynetwork"
-#       app2.vm.network "forwarded_port", guest: 80, host: 8088, host_ip: "127.0.0.1", guest_ip: "192.168.60.5"
-#
-#    end
+   # Node server
+   config.vm.define "app2" do |app2|
+     app2.vm.hostname = "alex-node"
+     app2.vm.box = "geerlingguy/centos7"
+     app2.vm.network :private_network, ip: "192.168.60.5", virtualbox__intnet: "mynetwork"
+      app2.vm.network "forwarded_port", guest: 8080, host: 8088, host_ip: "127.0.0.1", guest_ip: "192.168.60.5"
+
+   end
 
     # # Provision configuration for Ansible
     # config.vm.provision  :ansible do |ansible|
