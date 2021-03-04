@@ -84,32 +84,23 @@
 
     - name: "Copying a file for environment variables setting"
       copy:
-        src: ./maven_vars/redhat/maven.sh
+        src: ./maven.sh
         dest: /etc/profile.d/
         mode: "a+x"
       when: ansible_os_family == 'RedHat'
-
-    - name: "Copying a file for environment variables setting"
-      copy:
-        src: ./maven_vars/debian/maven.sh
-        dest: /etc/profile.d/
-        mode: "a+x"
-      when: ansible_os_family == 'Debian'
-
-
 
     - name: "Load environment variables!"
       shell:
         cmd: "source /etc/profile.d/maven.sh"
       args:
-        executable: /bin/bash
+        executable: /usr/bin/bash
 
-    # Next Play : install jenkins Role
-- hosts: all
-  become: yes
-
-  roles:
-    - { role: geerlingguy.jenkins, when: ansible_system == 'Linux' }
+#    # Next Play : install jenkins Role
+#- hosts: all
+#  become: yes
+#
+#  roles:
+#    - { role: geerlingguy.jenkins, when: ansible_system == 'Linux' }
 
 
 
