@@ -1,13 +1,5 @@
 credentials:
-  system:
-    domainCredentials:
-    - credentials:
-      - usernamePassword:
-          description: "jenkins"
-          id: "jenkins"
-          password: "{AQAAABAAAAAQsH5W5p1uFHb4c/aHt1rGx6Bds4KAZHqOU07WfGUu9fk=}"
-          scope: GLOBAL
-          username: "jenkins"
+
 jenkins:
   agentProtocols:
   - "JNLP4-connect"
