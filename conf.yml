@@ -4,6 +4,6 @@ jenkins:
       allowsSignup: false
       users:
         # create a user called admin
-        - id: "admin"
-          password: "admin"
+        - id: "adminer"
+          password: "adminer"
   authorizationStrategy: loggedInUsersCanDoAnything
