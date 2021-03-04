@@ -65,7 +65,7 @@
         name: docker
 
     # Install MAVEN
-    - name: "Download Maven 3.6.3 distro to /tmp"
+    - name: "Download Maven 3.6.3 distr to /tmp"
       get_url:
         url: "https://mirror.datacenter.by/pub/apache.org/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.tar.gz"
         dest: "/tmp"
@@ -84,16 +84,25 @@
 
     - name: "Copying a file for environment variables setting"
       copy:
-        src: ./maven.sh
+        src: ./maven_vars/redhat/maven.sh
         dest: /etc/profile.d/
         mode: "a+x"
-    #      when: ansible_os_family == 'RedHat'
+      when: ansible_os_family == 'RedHat'
 
-    #        - name: "Load environment variables!"
-    #          shell:
-    #            cmd: "source "
-    #          args:
-    #            executable: /bin/bash
+    - name: "Copying a file for environment variables setting"
+      copy:
+        src: ./maven_vars/debian/maven.sh
+        dest: /etc/profile.d/
+        mode: "a+x"
+      when: ansible_os_family == 'Debian'
+
+
+
+    - name: "Load environment variables!"
+      shell:
+        cmd: "source /etc/profile.d/maven.sh"
+      args:
+        executable: /bin/bash
 
     # Next Play : install jenkins Role
 - hosts: all
