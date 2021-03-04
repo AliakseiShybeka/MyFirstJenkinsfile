@@ -4,55 +4,69 @@
 
   tasks:
 
-    # Update all packages with yum
-    - name: "Upgrade all packages using yum"
-      yum:
-        name: '*'
-        state: 'latest'
+    # tasks file for install Java 1.8.0 to Debian systems
+    - name: apt-get update
+      apt:
+        update_cache: yes
 
-    - name: install java-1.8.0-openjdk-devel
-      yum:
-        name: "java-1.8.0-openjdk-devel"
-        state: 'latest'
+    - name: Upgrade all apt packages
+      apt:
+        upgrade: dist
+        force_apt_get: yes
+
+    - name: Install latest version of "openjdk-8-jdk" ignoring "install-recommends"
+      apt:
+        name: openjdk-8-jdk
+        state: latest
+        install_recommends: no
 
     - name: Just force systemd to reread configs
       systemd:
         daemon_reload: yes
 
-    - name: Install yum utils
-      yum:
-        name: yum-utils
+    - name: Add git stable repository from PPA and install its signing key on Ubuntu target
+      apt_repository:
+        repo: ppa:git-core/ppa
+
+    - name: apt-get update
+      apt:
+        update_cache: yes
+
+    - name: Install the package "git"
+      apt:
+        name: git
         state: latest
 
-    - name: Add Docker repo
-      get_url:
-        url: https://download.docker.com/linux/centos/docker-ce.repo
-        dest: /etc/yum.repos.d/docer-ce.repo
-      become: yes
+    - name: Install aptitude using apt
+      apt: name=aptitude state=latest update_cache=yes force_apt_get=yes
 
-    - name: installing docker
-      package:
-        name:
-          - docker-ce
-          - docker-ce-cli
-          - containerd.io
+    - name: Install required system packages
+      apt: name={{ item }} state=latest update_cache=yes
+      loop: [ 'apt-transport-https', 'ca-certificates', 'curl', 'software-properties-common', 'python3-pip', 'virtualenv', 'python3-setuptools' ]
+
+    - name: Add Docker GPG apt Key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
         state: present
 
-    - name: 'Starting Docker services'
-      service:
-        name: docker
-        state: started
+    - name: Add Docker Repository
+      apt_repository:
+        repo: deb https://download.docker.com/linux/ubuntu bionic stable
+        state: present
 
-    - name: install docker-compose
-      get_url:
-        url: "https://github.com/docker/compose/releases/download/1.27.4/docker-compose-Linux-x86_64"
-        dest: "/usr/local/bin/docker-compose"
-        mode: 0755
+    - name: Update apt and install docker-ce
+      apt:
+        update_cache: yes
+        name: docker-ce
+        state: latest
 
-    # Configure docker remote API ↓ ↓ ↓
+    - name: user mode for docker and user vagrant
+      shell: "usermod -aG docker vagrant"
+      args:
+        executable: /bin/bash
 
     # Edit lib/systemd/system/docker.service
-    - name: comment ExecStart line in docker.sercive
+    - name: comment ExecStart line in docker.service
       shell: "sed -i 's/^ExecStart/#&/' /lib/systemd/system/docker.service"
     # Add new line after commented
     - name: add new line
@@ -64,43 +78,53 @@
         state: restarted
         name: docker
 
-    # Install MAVEN
-    - name: "Download Maven 3.6.3 distr to /tmp"
+    # Next Play : install jenkins Role
+- hosts: all
+  become: yes
+
+  roles:
+    - { role: geerlingguy.jenkins, when: ansible_system == 'Linux' }
+
+    # Next Play : install jenkins plugins
+- hosts: all
+  become: yes
+
+  tasks:
+    - name: enable_some_VARIABLES
+      include_vars: vars.yml
+
+    - name: Download CLI jar
       get_url:
-        url: "https://mirror.datacenter.by/pub/apache.org/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.tar.gz"
-        dest: "/tmp"
-    - name: "Extract"
-      unarchive:
-        src: "/tmp/apache-maven-3.6.3-bin.tar.gz"
-        dest: "/opt"
-        remote_src: yes
-      become: yes
+        url: "http://127.0.0.1:8080/jnlpJars/jenkins-cli.jar"
+        dest: "/opt/jenkins-cli.jar"
 
-    - name: "Create Symbolic link"
-      file:
-        src: "/opt/apache-maven-3.6.3"
-        dest: "/opt/maven"
-        state: link
-
-    - name: "Copying a file for environment variables setting"
-      copy:
-        src: ./maven.sh
-        dest: /etc/profile.d/
-        mode: "a+x"
-      when: ansible_os_family == 'RedHat'
-
-    - name: "Load environment variables!"
+    - name: install bunch of jenkins plugins
       shell:
-        cmd: "source /etc/profile.d/maven.sh"
-      args:
-        executable: /usr/bin/bash
+        cmd: "java -jar /opt/jenkins-cli.jar -s http://127.0.0.1:8080/  -auth {{jenkins_admin_username}}:{{jenkins_admin_password}} install-plugin {{ item }}"
+      ignore_errors: yes
+      with_items: "{{ plugin_list }}"
 
-#    # Next Play : install jenkins Role
-#- hosts: all
-#  become: yes
-#
-#  roles:
-#    - { role: geerlingguy.jenkins, when: ansible_system == 'Linux' }
+    - name: Restart Jenkins to make the plugin data available
+      service:
+        name: jenkins
+        state: restarted
+
+    - name: Wait for Jenkins to start up before proceeding.
+      uri:
+        url: "http://127.0.0.1:8080/cli/"
+        method: GET
+        return_content: "yes"
+        timeout: 5
+        body_format: raw
+        follow_redirects: "no"
+        status_code: 200,403
+      register: result
+      until: (result.status == 403 or result.status == 200) and (result.content.find("Please wait while") == -1)
+      retries: "70"
+      delay: "10"
+      changed_when: false
+      check_mode: false
+
 
 
 
