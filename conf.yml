@@ -7,3 +7,27 @@ jenkins:
         - id: "adminer"
           password: "adminer"
   authorizationStrategy: loggedInUsersCanDoAnything
+  clouds:
+    - docker:
+        dockerApi:
+          connectTimeout: 60
+          dockerHost:
+            uri: "tcp://127.0.0.1:4243"
+          readTimeout: 60
+        name: "local-docker-java-maven"
+        templates:
+        - connector:
+            ssh:
+              sshKeyStrategy:
+                manuallyConfiguredSSHKey:
+                  credentialsId: "jenkins"
+                  sshHostKeyVerificationStrategy: "nonVerifyingKeyVerificationStrategy"
+          dockerTemplateBase:
+            cpuPeriod: 0
+            cpuQuota: 0
+            image: "bibinwilson/jenkins-slave:latest"
+          labelString: "java-docker-slave-local"
+          name: "java-docker-slave-local"
+          pullStrategy: PULL_ALWAYS
+          pullTimeout: 300
+          remoteFs: "/home/jenkins"
