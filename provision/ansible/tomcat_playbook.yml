@@ -1,0 +1,63 @@
+---
+- hosts: all
+  become: yes
+
+  tasks:
+    - name: 'Step 1: apt-get update'
+      apt:
+          update_cache: yes
+
+    - name: 'Step 2: Install "openjdk-11-jdk" ignoring "install-recommends"'
+      apt:
+          name: openjdk-11-jdk
+          state: latest
+          install_recommends: no
+
+    - name: "Step 3: add tomcat group"
+      group:
+          name: tomcat
+
+    - name: "Step 4: add tomcat user"
+      user:
+          name: tomcat
+          group: tomcat
+          home: /user/share/tomcat
+          createhome: no
+
+    - name: "Step 5: create /opt/tomcat directory"
+      file:
+          path: /opt/tomcat
+          state: directory
+          mode: 0755
+
+    - name: "Step 6: download & unpack"
+      unarchive:
+          src: "https://www-eu.apache.org/dist/tomcat/tomcat-9/v9.0.43/bin/apache-tomcat-9.0.43.tar.gz"
+          dest: "/opt/tomcat"
+          remote_src: yes
+          extra_opts: [ --strip-components=1 ]
+
+    - name: "Step 7: Change ownership"
+      file:
+          path: /opt/tomcat
+          owner: tomcat
+          group: tomcat
+          mode: "u+rwx,g+rx,o=rx"
+          recurse: yes
+          state: directory
+
+    - name: "Step 8: Create a symbolic link"
+      file:
+        src: /opt/tomcat/apache-tomcat-9.0.43
+        dest: /opt/tomcat/latest
+        owner: tomcat
+        group: tomcat
+        state: link
+
+    - name: 'Step 9: Changing perm of "/opt/tomcat/latest/bin/*.sh", adding "+x"'
+      file:
+        path: "/opt/tomcat/latest/bin/*.sh"
+        mode: a+x
+
+
+
